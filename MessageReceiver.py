@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
-#from MessageParser import MessageParser
+import Parser
 import json
 import time
 
@@ -18,25 +18,19 @@ class MessageReceiver(Thread):
         Thread.__init__(self)
         self.daemon = True
         self.connection = connection
-       # self.Parser = MessageParser()
         self.client = client
 
-        # TODO: Finish initialization of MessageReceiver
         
     def run(self):
-        # TODO: Make MessageReceiver receive and handle payloads
         runReceiver = True
         while runReceiver == True:
             payload = self.connection.recv(4096)
-            #print "payload: ", payload, "end"
-            if payload == -1:
-                print "Payload -1"
-                self.client.disconnect()
-                exit
             if payload == '':
                 print "Receiver thread shutdown"
                 runReceiver = False
             else:
-                message = json.loads(payload)
-                print message['content']
+                if json.loads(payload)['response'] == 'history':
+                    self.client.isLoggedin = True
+                print Parser.parse_json(payload, self.client.username)
+
 
