@@ -27,6 +27,7 @@ class Client:
         self.server_port = server_port
         
         self.Receiver = MessageReceiver.MessageReceiver(self, self.connection) #SENDER PARSEREN TIL ASTRIT
+        self.isLoggedin = False
         ## SLUTT
         print "init complete... Connecting"
         self.run()
@@ -63,17 +64,14 @@ class Client:
                     print "ERROR: BAD MESSAGE (can't use æ, ø or å)"
                     continue
                 self.send_payload(payload)
-                if "request" in payload and "logout" in payload:
-                    self.disconnect()
-                
-            
-                        
+                if ('"request": "logout"' in payload):
+                    self.disconnect()                        
         
     
     def disconnect(self):
         print "Shutting down"
         self.connection.close()
-        raw_input("Press any button to close program")
+        raw_input("Press any button to close program\n")
         exit()
 
     def send_payload(self, data):
@@ -95,6 +93,8 @@ class Client:
                     print "ERROR: INVALID LOGIN"
                     return -1
                 else:
+                    if not self.isLoggedin:
+                        self.username = msg.split()[1]
                     return {'request':'login', 'content':msg.split()[1]}
                 
             elif "-names" in msg:
