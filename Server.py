@@ -84,9 +84,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         # Logout requested
                         users.remove(username)
                         message['sender'] = 'Server'
-                        message['response'] = 'message'
+                        message['response'] = 'info'
                         message['content'] = username + ' has logged out'
-                        msg_log.append(message)
+                        msg_log.append(json.dumps(message))
                         self.connection.close()
                         break 
 
