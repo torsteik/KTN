@@ -143,9 +143,6 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                             print msg_log
                             # Send history
                             message['response'] = 'history'
-                            history = ''
-                            for i in range(len(msg_log)):
-                                history += json.dumps(msg_log[i])
                             message['content'] = msg_log
                             self.connection.send(json.dumps(message))
 
