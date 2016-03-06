@@ -187,7 +187,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                 if (len(msg_log) - log_len) and username:
                     # New messages from other users
                     for i in range(len(msg_log) - log_len):
-                        self.connection.send(json(msg_log[log_len + i]))
+                        self.connection.send(msg_log[log_len + i])
                     log_len = len(msg_log)
             
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
