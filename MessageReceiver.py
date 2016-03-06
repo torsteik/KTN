@@ -25,12 +25,20 @@ class MessageReceiver(Thread):
         runReceiver = True
         while runReceiver == True:
             payload = self.connection.recv(4096)
-            if payload == '':
+            message = payload
+            
+            ## Hvis recv ikke klarer å hente hele meldingen i en runde
+            while len(payload) == 4096:
+                payload = self.connection.recv(4096)
+                print "LEN: " +  str(len(payload))
+                message += payload
+                
+            if message == '':
                 print "Receiver thread shutdown"
                 runReceiver = False
             else:
-                if json.loads(payload)['response'] == 'history':
+                if json.loads(message)['response'] == 'history':
                     self.client.isLoggedin = True
-                print Parser.parse_json(payload, self.client.username)
+                print Parser.parse_json(message, self.client.username)
 
 
