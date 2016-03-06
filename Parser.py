@@ -1,7 +1,7 @@
 #Parser
 import json
 
-def parse_json(string, user):
+def parse_json(string, username):
     obj = json.loads(string)
     ret_val = ''
     if obj['response'] == 'error':
@@ -11,15 +11,21 @@ def parse_json(string, user):
         ret_val += obj['content']
         ret_val += '\n'
         return ret_val
-    elif (obj['response'] == 'message') and (user != obj['sender']):
+    elif obj['response'] == 'message':
+        ret_val += '\n'
         ret_val += obj['sender'] + ': '
         ret_val += obj['content']
+        ret_val += '\n'
+        if obj['sender'] == username:
+            return ''
         return ret_val
     elif obj['response'] == 'history':
-        ret_val = '\n' + 'Previously sent on ' obj['sender'] + "'s server:\n"
+        #print obj['content'][0]
+        ret_val = '\n*******************************'
+        ret_val += '\nPreviously on ' + obj['sender'] + "'s server:\n"
         for jobj in obj['content']:
-            ret_val += parse_json(jobj)
-        ret_val += '\n'
+            ret_val += parse_json(jobj, '')
+        ret_val += '*******************************\n'
         return ret_val
     elif obj['response'] == 'info':
         ret_val = '\n'
@@ -29,4 +35,4 @@ def parse_json(string, user):
         ret_val += '\n'
         return ret_val
     else:
-        return '\nInvalid Response: "' + obj['response'] + '"\n'
+        return '\n\nInvalid Response: "' + obj['response'] + '"\n\n'
