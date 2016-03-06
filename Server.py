@@ -147,7 +147,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                             for i in range(len(msg_log)):
                                 history += json.dumps(msg_log[i])
                             message['content'] = msg_log
-                            self.connection.send(message)
+                            self.connection.send(json.dumps(message))
 
                         elif valid == 2:
                             # Login unsuccessful - Invalid username
