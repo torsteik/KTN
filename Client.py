@@ -28,6 +28,7 @@ class Client:
         
         self.Receiver = MessageReceiver.MessageReceiver(self, self.connection) #SENDER PARSEREN TIL ASTRIT
         self.isLoggedin = False
+        self.username = ''
         ## SLUTT
         print "init complete... Connecting"
         self.run()
@@ -45,7 +46,7 @@ class Client:
                 elif ans == "n":
                     exit()
                 else:
-                    print "Invalid answer"
+                    print "CLIENT ERROR: invalid answer"
                     continue
             notConn = False
         print "Connection established\nType -help for help"
@@ -61,7 +62,7 @@ class Client:
                 try:
                     payload = json.dumps(payload)
                 except:
-                    print "ERROR: BAD MESSAGE (can't use æ, ø or å)"
+                    print "CLIENT ERROR: BAD MESSAGE (can't use æ, ø or å)"
                     continue
                 self.send_payload(payload)
                 if ('"request": "logout"' in payload):
@@ -90,7 +91,7 @@ class Client:
         if msg[0] == "-":
             if "-login" in msg:
                 if len(msg.split()) != 2:
-                    print "ERROR: INVALID LOGIN"
+                    print "CLIENT ERROR: INVALID LOGIN"
                     return -1
                 else:
                     if not self.isLoggedin:
