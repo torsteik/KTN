@@ -9,25 +9,6 @@ import time
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
-users = []
-msg_log = []
-
-def username_validation(username):
-    valid = 1 # Valid username
-    # Check if characters are legal
-    for i in range(len(username)):
-        int_val = ord(username[i])
-        if  (int_val > 47 and int_val < 58) or \
-            int_val > 64 and int_val < 91 or \
-            int_val > 96 and int_val < 122:
-            pass
-        else:
-            valid = 2 # Invalid username
-            break
-    # Check if username is free
-    if valid == 1 and username in users:
-        valid = 3 #Username already in use
-    return valid
 
 class ClientHandler(SocketServer.BaseRequestHandler):
     """
@@ -48,7 +29,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
 
         time_format = "%a %b %d %H:%M:%S %Y"
         username = None
-        log_len = len(msg_log)
+        log_len = len(server.msg_log)
         message = {
             'timestamp':'',
             'sender':'',
@@ -82,11 +63,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         
                     elif request == 'logout':
                         # Logout requested
-                        users.remove(username)
+                        server.users.remove(username)
                         message['sender'] = 'Server'
                         message['response'] = 'info'
                         message['content'] = username + ' has logged out'
-                        msg_log.append(json.dumps(message))
+                        server.msg_log.append(json.dumps(message))
                         self.connection.close()
                         break 
 
@@ -95,15 +76,15 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         message['sender'] = username
                         message['response'] = 'message'
                         message['content'] = content
-                        msg_log.append(json.dumps(message))
-                        ######## OBS! INGEN .SEND() OG FAKTORISERE UT HER
+                        server.msg_log.append(json.dumps(message))
+                        ######## OBS! INGEN .SEND() Å FAKTORISERE UT HER
                             
                     elif request == 'names':
                         # Client requests list of users in chat
                         message['sender'] = 'Server'
                         message['response'] = 'info'
                         message['content'] = 'Users in chat:'
-                        for user in users:
+                        for user in server.users:
                             message['content'] += '\n' + user
                         self.connection.send(json.dumps(message))
                         
@@ -132,18 +113,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     if request == 'login':
                         # Login requested
                         message['response'] = 'info'
-                        valid = username_validation(content)
+                        valid = self.username_validation(content)
                         if valid == 1:
                             # Login success
                             username = content
-                            users.append(username)
+                            server.users.append(username)
                             message['sender'] = 'Server'
                             message['content']  = 'Login successful'
                             self.connection.send(json.dumps(message))
-                            print msg_log
                             # Send history
                             message['response'] = 'history'
-                            message['content'] = msg_log
+                            message['content'] = server.msg_log
                             self.connection.send(json.dumps(message))
 
                         elif valid == 2:
@@ -181,11 +161,31 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             else:
                 # No new requests from user
-                if (len(msg_log) - log_len) and username:
+                if (len(server.msg_log) - log_len) and username:
                     # New messages from other users
-                    for i in range(len(msg_log) - log_len):
-                        self.connection.send(msg_log[log_len + i])
-                    log_len = len(msg_log)
+                    for i in range(len(server.msg_log) - log_len):
+                        self.connection.send(server.msg_log[log_len + i])
+                    log_len = len(server.msg_log)
+                else:
+                    # Avoid that clients that are not logged in receive messages
+                    log_len = len(server.msg_log)
+                    
+    def username_validation(self, username):
+        valid = 1 # Valid username
+        # Check if characters are legal
+        for i in range(len(username)):
+            int_val = ord(username[i])
+            if  (int_val > 47 and int_val < 58) or \
+                int_val > 64 and int_val < 91 or \
+                int_val > 96 and int_val < 122:
+                pass
+            else:
+                valid = 2 # Invalid username
+                break
+        # Check if username is free
+        if valid == 1 and username in server.users:
+            valid = 3 #Username already in use
+        return valid
             
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     """
@@ -195,6 +195,8 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     No alterations are necessary
     """
     allow_reuse_address = True
+    users = []
+    msg_log = []
 
 if __name__ == "__main__":
     """
