@@ -16,7 +16,7 @@ def parse_json(string, user):
         ret_val += obj['content']
         return ret_val
     elif obj['response'] == 'history':
-        ret_val = '\n'
+        ret_val = '\n' + 'Previously sent on ' obj['sender'] + "'s server:\n"
         for jobj in obj['content']:
             ret_val += parse_json(jobj)
         ret_val += '\n'
