@@ -42,7 +42,16 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             read, write,exep = select.select([self.connection],[],[],0.2)
             if len(read):
                 # If anything was received
-                received_string = self.connection.recv(4096)
+                try: 
+                    received_string = self.connection.recv(4096)
+                    if received_string == '':
+                        raise BaseException()
+                except:
+                    print "USERNAME:  " + username
+                    if username:
+                        server.users.remove(username)
+                    break
+                    
                 received_dict = json.loads(received_string)
                 request = received_dict['request']
                 content = received_dict['content']
@@ -205,7 +214,7 @@ if __name__ == "__main__":
 
     No alterations are necessary
     """
-    HOST, PORT = 'localhost', 9998
+    HOST, PORT = '0.0.0.0', 9998
     print 'Server running...'
 
     # Set up and initiate the TCP server
